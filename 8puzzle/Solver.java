@@ -70,7 +70,36 @@ public class Solver {
         solution.add(current);
         twinSolution.add(currentTwin);
 
+        optimizeSolution(solution);
+
         return current.isGoal() ? solution : null;
+    }
+
+    private void optimizeSolution(List<Board> solution) {
+        int i = solution.size() - 1;
+        int j = solution.size() - 2;
+
+        Board cur;
+        Board prev;
+        while (i >= 0) {
+            cur = solution.get(i);
+            // TODO: opt with distance
+            while(j >= 0 && !isNeighbor(cur, solution.get(j))) {
+                solution.remove(j);
+                j--;
+            }
+            i = j;
+            j = i - 1;
+        }
+    }
+
+    private boolean isNeighbor(Board first, Board second) {
+        for (Board neighbor : second.neighbors()) {
+            if (neighbor.equals(first)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Board makeStep(MinPQ<Board> tree, Board current, List<Board> solution) {
