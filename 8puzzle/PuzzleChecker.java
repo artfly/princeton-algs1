@@ -49,12 +49,12 @@ public class PuzzleChecker {
             Board initial = new Board(tiles);
             Solver solver = new Solver(initial);
             StdOut.println(filename + ": " + solver.moves());
-            // if (solver.isSolvable()) {
-            //     StdOut.println("solution");
-            //     for (Board board : solver.solution()) {
-            //         StdOut.println(board);
-            //     }
-            // }
+//            if (solver.isSolvable()) {
+//                StdOut.println("solution");
+//                for (Board board : solver.solution()) {
+//                    StdOut.println(board);
+//                }
+//            }
         }
     }
 }

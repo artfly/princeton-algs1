@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Formatter;
 
 /**
  * This class represent 8puzzle field state.
@@ -19,33 +20,34 @@ public class Board {
      */
     public Board(int[][] blocks) {
         this.n = blocks[0].length;
-        this.blocks = blocks;
+        this.blocks = copy(blocks);
 
-        int hammingDistance = 0;
-        int manhattanDistance = 0;
-        int emptyPosition = 0;
+        int hamming = 0;
+        int manhattan = 0;
+        int emptyPos = 0;
 
-        int position;
         int block;
         int difference;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 block = blocks[i][j];
-                position = position(i, j);
                 if (block == 0) {
-                    emptyPosition = position;
+                    emptyPos = position(i, j);
                     continue;
                 }
-                difference = Math.abs(position + 1 - block);
 
-                manhattanDistance += difference / n + difference % n;
-                hammingDistance += difference == 0 ? 0 : 1;
+                difference = Math.abs(i - row(block)) + Math.abs(j - col(block));
+
+                manhattan += difference;
+                if (difference != 0) {
+                    hamming++;
+                }
             }
         }
 
-        this.hammingDistance = hammingDistance;
-        this.manhattanDistance = manhattanDistance;
-        this.emptyPosition = emptyPosition;
+        this.hammingDistance = hamming;
+        this.manhattanDistance = manhattan;
+        this.emptyPosition = emptyPos;
     }
 
     /**
@@ -121,7 +123,7 @@ public class Board {
 
     @Override
     public boolean equals(Object y) {
-        if (!(y instanceof Board)) {
+        if (y == null || this.getClass() != y.getClass()) {
             return false;
         }
 
@@ -145,10 +147,16 @@ public class Board {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        Formatter formatter = new Formatter(sb);
+        int width = (n * n - 1) / 10 + 1;
+
+        sb.append(n).append('\n');
         for (int i = 0; i < dimension(); i++) {
             for (int j = 0; j < dimension(); j++) {
-                sb.append(blocks[i][j]);
-                sb.append("  ");
+                formatter.format("%" + width + "d", blocks[i][j]);
+                if (j != n - 1) {
+                    sb.append(' ');
+                }
             }
             sb.append('\n');
         }
@@ -183,5 +191,13 @@ public class Board {
 
     private int position(int i, int j) {
         return i * n + j;
+    }
+
+    private int row(int block) {
+        return (block - 1) / n;
+    }
+
+    private int col(int block) {
+        return (block - 1) % n;
     }
 }

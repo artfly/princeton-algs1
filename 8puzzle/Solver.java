@@ -1,16 +1,14 @@
 import edu.princeton.cs.algs4.MinPQ;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.util.Comparator.comparingInt;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * Class for solving 8puzzle problem using A* algorithm.
  */
 public class Solver {
 
-    private final List<Board> solution;
+    private final Move lastMove;
 
     /**
      * Constructor. Provides solution during init.
@@ -21,7 +19,7 @@ public class Solver {
         if (initial == null) {
             throw new IllegalArgumentException("null board provided");
         }
-        this.solution = solve(initial);
+        this.lastMove = solve(initial);
     }
 
     /**
@@ -30,7 +28,7 @@ public class Solver {
      * @return is solvable
      */
     public boolean isSolvable() {
-        return solution != null;
+        return lastMove.board.isGoal();
     }
 
     /**
@@ -39,7 +37,10 @@ public class Solver {
      * @return number of moves
      */
     public int moves() {
-        return solution == null ? -1 : solution.size() - 1;
+        if (lastMove.board.isGoal()) {
+            return lastMove.movesBefore;
+        }
+        return -1;
     }
 
     /**
@@ -48,76 +49,59 @@ public class Solver {
      * @return solution
      */
     public Iterable<Board> solution() {
-        return solution;
-    }
-
-    private List<Board> solve(Board initial) {
-        Board current = initial;
-        MinPQ<Board> tree = new MinPQ<>(comparingInt(Board::manhattan));
-        List<Board> solution = new ArrayList<>();
-
-        Board currentTwin = initial.twin();
-        MinPQ<Board> twinTree = new MinPQ<>(comparingInt(Board::manhattan));
-        List<Board> twinSolution = new ArrayList<>();
-
-        while (!current.isGoal() && !currentTwin.isGoal()) {
-            solution.add(current);
-            current = makeStep(tree, current, solution);
-
-            twinSolution.add(currentTwin);
-            currentTwin = makeStep(twinTree, currentTwin, twinSolution);
-        }
-        solution.add(current);
-        twinSolution.add(currentTwin);
-
-        optimizeSolution(solution);
-
-        return current.isGoal() ? solution : null;
-    }
-
-    private void optimizeSolution(List<Board> solution) {
-        int i = solution.size() - 1;
-        int j = solution.size() - 2;
-
-        Board cur;
-        Board prev;
-        while (i >= 0) {
-            cur = solution.get(i);
-            // TODO: opt with distance
-            while(j >= 0 && !isNeighbor(cur, solution.get(j))) {
-                solution.remove(j);
-                j--;
+        Deque<Board> stack = null;
+        Move current = lastMove;
+        if (isSolvable()) {
+            stack = new ArrayDeque<>();
+            while (current != null) {
+                stack.push(current.board);
+                current = current.prev;
             }
-            i = j;
-            j = i - 1;
+        }
+        return stack;
+    }
+
+    private Move solve(Board initial) {
+        Move move = new Move(initial, null, 0);
+        MinPQ<Move> tree = new MinPQ<>();
+
+        Move twinMove = new Move(initial.twin(), null, 0);
+        MinPQ<Move> twinTree = new MinPQ<>();
+
+        while (!move.board.isGoal() && !twinMove.board.isGoal()) {
+            expand(move, tree);
+            move = tree.delMin();
+
+            expand(twinMove, twinTree);
+            twinMove = twinTree.delMin();
+        }
+
+        return move;
+    }
+
+    private void expand(Move move, MinPQ<Move> tree) {
+        for (Board neighbor : move.board.neighbors()) {
+            if (move.prev == null || !neighbor.equals(move.prev.board)) {
+                tree.insert(new Move(neighbor, move, move.movesBefore + 1));
+            }
         }
     }
 
-    private boolean isNeighbor(Board first, Board second) {
-        for (Board neighbor : second.neighbors()) {
-            if (neighbor.equals(first)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    private class Move implements Comparable<Move> {
 
-    private Board makeStep(MinPQ<Board> tree, Board current, List<Board> solution) {
-        boolean shouldAdd;
+        private final Move prev;
+        private final Board board;
+        private final int movesBefore;
 
-        for (Board neighbor : current.neighbors()) {
-            shouldAdd = true;
-            for (Board visited : solution) {
-                if (neighbor.equals(visited)) {
-                    shouldAdd = false;
-                    break;
-                }
-            }
-            if (shouldAdd) {
-                tree.insert(neighbor);
-            }
+        private Move(Board board, Move prev, int movesBefore) {
+            this.board = board;
+            this.prev = prev;
+            this.movesBefore = movesBefore;
         }
 
-        return tree.delMin();
+        @Override
+        public int compareTo(Move other) {
+            return (this.board.manhattan() + this.movesBefore) - (other.board.manhattan() + other.movesBefore);
+        }
     }
 }
