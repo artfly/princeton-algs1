@@ -38,6 +38,10 @@ public class Percolation {
     public void open(int row, int col) {
         validate(row, col);
 
+        if (isOpen(row, col)) {
+            return;
+        }
+
         int pos = position(row, col);
         state[position(row, col)] = true;
         opened++;
