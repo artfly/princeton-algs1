@@ -42,16 +42,17 @@ public class Percolation {
         state[position(row, col)] = true;
         opened++;
 
-        int neighborPos;
-        for (int i = -1; i <= 1; i += 2) {
-            neighborPos = position(row + i, col);
-            if (neighborPos >= 0 && neighborPos < n * n && state[neighborPos]) {
-                uf.union(pos, neighborPos);
-            }
-            neighborPos = position(row, col + i);
-            if (neighborPos >= 0 && neighborPos < n * n && state[neighborPos]) {
-                uf.union(pos, neighborPos);
-            }
+        if (row > 1 && state[position(row - 1, col)]) {
+            uf.union(pos, position(row - 1, col));
+        }
+        if (row < n && state[position(row + 1, col)]) {
+            uf.union(pos, position(row + 1, col));
+        }
+        if (col > 1 && state[position(row, col - 1)]) {
+            uf.union(pos, position(row, col - 1));
+        }
+        if (col < n && state[position(row, col + 1)]) {
+            uf.union(pos, position(row, col + 1));
         }
     }
 
