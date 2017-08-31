@@ -79,7 +79,7 @@ public class PercolationStats {
      * @return confidence lo
      */
     public double confidenceLo() {
-        return mean - (1.96 * Math.sqrt(stddev)) / Math.sqrt(trials);
+        return mean - 1.96 * stddev / Math.sqrt(trials);
     }
 
     /**
@@ -88,6 +88,6 @@ public class PercolationStats {
      * @return confidence hi
      */
     public double confidenceHi() {
-        return mean + (1.96 * Math.sqrt(stddev) / Math.sqrt(trials));
+        return mean + 1.96 * stddev / Math.sqrt(trials);
     }
 }

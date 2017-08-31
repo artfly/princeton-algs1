@@ -19,6 +19,10 @@ public class Percolation {
      * @param n dimension
      */
     public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Invalid grid size");
+        }
+
         this.uf = new WeightedQuickUnionUF(n * n + 2);
         this.state = new boolean[n * n];
         this.n = n;
