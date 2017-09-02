@@ -2,68 +2,103 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * .
- *
- * @author artfly
+ * A linear collection that supports element insertion and removal at
+ * both ends.
  */
 public class Deque<Item> implements Iterable<Item> {
 
     private Node<Item> first;
-    private Node<Item> last = first;
+    private Node<Item> last;
     private int size = 0;
 
+    /**
+     * Constructor.
+     */
     public Deque() {
     }
 
+    /**
+     * Check if deque has no more elements.
+     *
+     * @return is empty
+     */
     public boolean isEmpty() {
         return size == 0;
     }
 
+    /**
+     * Get current size.
+     *
+     * @return size
+     */
     public int size() {
         return size;
     }
 
+    /**
+     * Insert new element at the front.
+     *
+     * @param item item to insert
+     */
     public void addFirst(Item item) {
         if (item == null) {
             throw new IllegalArgumentException("Null items are not supported");
         }
 
-        Node<Item> newNode = node(item);
-
-        newNode.next = first;
-        if (first != null) {
-            first.prev = newNode;
+        Node<Item> node = node(item);
+        node.next = first;
+        first = node;
+        if (node.next != null) {
+            node.next.prev = node;
         }
-        first = newNode;
+        else {
+            last = node;
+        }
 
         size++;
     }
 
+    /**
+     * Insert new element at the end.
+     *
+     * @param item item to insert
+     */
     public void addLast(Item item) {
         if (item == null) {
             throw new IllegalArgumentException("Null items are not supported");
         }
 
-        Node<Item> newNode = node(item);
-
-        newNode.prev = last;
-        if (last != null) {
-            last.next = newNode;
+        Node<Item> node = node(item);
+        node.prev = last;
+        last = node;
+        if (node.prev != null) {
+            node.prev.next = node;
         }
-        last = newNode;
+        else {
+            first = node;
+        }
 
         size++;
     }
 
+    /**
+     * Remove element at the front.
+     *
+     * @return removed element
+     */
     public Item removeFirst() {
         if (first == null) {
-            throw new NoSuchElementException("No such element");
+            throw new NoSuchElementException("Deque is empty");
         }
 
         Item item = first.item;
+
         first = first.next;
         if (first != null) {
             first.prev = null;
+        }
+        else {
+            last = null;
         }
 
         size--;
@@ -71,15 +106,24 @@ public class Deque<Item> implements Iterable<Item> {
         return item;
     }
 
+    /**
+     * Remove element at the end.
+     *
+     * @return removed element
+     */
     public Item removeLast() {
         if (last == null) {
-            throw new NoSuchElementException("No such element");
+            throw new NoSuchElementException("Deque is empty");
         }
 
         Item item = last.item;
+
         last = last.prev;
         if (last != null) {
             last.next = null;
+        }
+        else {
+            first = null;
         }
 
         size--;
@@ -99,29 +143,37 @@ public class Deque<Item> implements Iterable<Item> {
         return node;
     }
 
+    /**
+     * Deque node representation.
+     *
+     * @param <Item> node data type
+     */
     private static class Node<Item> {
         private Node<Item> next;
         private Node<Item> prev;
         private Item item;
     }
 
+    /**
+     * Deque iterator.
+     */
     private class DequeItr implements Iterator<Item> {
 
-        private Node<Item> cur = first;
+        private Node<Item> next = first;
 
         @Override
         public boolean hasNext() {
-            return cur != null;
+            return next != null;
         }
 
         @Override
         public Item next() {
-            if (cur == null) {
+            if (!hasNext()) {
                 throw new NoSuchElementException("No more elements in deque");
             }
 
-            Item item = cur.item;
-            cur = cur.next;
+            Item item = next.item;
+            next = next.next;
 
             return item;
         }

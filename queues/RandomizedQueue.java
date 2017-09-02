@@ -4,9 +4,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * .
- *
- * @author artfly
+ * Collection that supports random element retrieval.
  */
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
@@ -15,36 +13,58 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private Item[] items = (Item[]) new Object[DEFAULT_CAPACITY];
     private int size = 0;
 
+    /**
+     * Constructor.
+     */
     public RandomizedQueue() {
     }
 
+    /**
+     * Check if queue is empty.
+     *
+     * @return is empty
+     */
     public boolean isEmpty() {
         return size == 0;
     }
 
+    /**
+     * Get current queue size.
+     *
+     * @return size
+     */
     public int size() {
         return size;
     }
 
+    /**
+     * Append specified item at the end.
+     *
+     * @param item item
+     */
     public void enqueue(Item item) {
         if (item == null) {
             throw new IllegalArgumentException("Null items are not supported");
         }
-        // TODO: corner cases
         if (size == items.length / 2) {
-            items = resize(items, items.length * 2);
+            resize(items.length * 2);
         }
         items[size] = item;
 
         size++;
     }
 
+    /**
+     * Extract random item from queue.
+     *
+     * @return item
+     */
     public Item dequeue() {
         if (size == 0) {
             throw new NoSuchElementException("Queue is empty");
         }
         if (size == items.length / 4) {
-            resize(items, items.length / 2);
+            resize(items.length / 2);
         }
         swap(StdRandom.uniform(size), size - 1, items);
 
@@ -56,6 +76,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return item;
     }
 
+    /**
+     * Retrieve random item from queue without its removal.
+     *
+     * @return item
+     */
     public Item sample() {
         if (size == 0) {
             throw new NoSuchElementException("Queue is empty");
@@ -63,30 +88,53 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return items[StdRandom.uniform(size)];
     }
 
+    /**
+     * Iterator for traversing collection in random order.
+     *
+     * @return iterator
+     */
     public Iterator<Item> iterator() {
         return new RandomizedQueueItr();
     }
 
+    private void resize(int capacity) {
+        Item[] resized = (Item[]) new Object[capacity];
+        System.arraycopy(items, 0, resized, 0, items.length / 2);
+        this.items = resized;
+    }
+
+    private void swap(int aPos, int bPos, Item[] arr) {
+        Item tmp = arr[aPos];
+        arr[aPos] = arr[bPos];
+        arr[bPos] = tmp;
+    }
+
+    /**
+     * Randomized iterator.
+     */
     private class RandomizedQueueItr implements Iterator<Item> {
 
-        private int[] indices = new int[size];
-        int curIdx = 0;
+        private int curIdx = 0;
+        private final int[] indices = new int[size];
 
+        /**
+         * Constructor.
+         */
         public RandomizedQueueItr() {
             for (int i = 0; i < indices.length; i++) {
                 indices[i] = i;
             }
 
-            for (int i = indices.length - 1; i >= 0; i--) {
-                swapInts(StdRandom.uniform(i), i, indices);
+            for (int i = indices.length; i > 0; i--) {
+                swapInts(StdRandom.uniform(i), i - 1, indices);
             }
 
         }
 
-        private void swapInts(int aPos, int bPos, int[] items) {
-            int tmp = items[aPos];
-            items[aPos] = items[bPos];
-            items[bPos] = tmp;
+        private void swapInts(int aPos, int bPos, int[] arr) {
+            int tmp = arr[aPos];
+            arr[aPos] = arr[bPos];
+            arr[bPos] = tmp;
         }
 
         @Override
@@ -96,11 +144,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         @Override
         public Item next() {
-            if (curIdx == indices.length) {
+            if (!hasNext()) {
                 throw new NoSuchElementException("No more elements in queue");
             }
+
             Item item = items[indices[curIdx]];
             curIdx++;
+
             return item;
         }
 
@@ -108,17 +158,5 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         public void remove() {
             throw new UnsupportedOperationException("Remove operation is not supported");
         }
-    }
-
-    private Item[] resize(Item[] oldArr, int size) {
-        Item[] newArr = (Item[]) new Object[size];
-        System.arraycopy(oldArr, 0, newArr, 0, oldArr.length);
-        return newArr;
-    }
-
-    private void swap(int aPos, int bPos, Item[] items) {
-        Item tmp = items[aPos];
-        items[aPos] = items[bPos];
-        items[bPos] = tmp;
     }
 }
